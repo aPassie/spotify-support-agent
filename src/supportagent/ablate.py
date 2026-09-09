@@ -66,7 +66,9 @@ def main() -> None:
             outs = list(
                 tqdm(ex.map(lambda g: agent.handle(g["cust_text"], lang=g["lang"], tweet_id=g["cust_tweet_id"]), gold), total=len(gold), desc=variant, mininterval=5)
             )
-        rows = [{"id": g["id"], "cust_tweet_id": g["cust_tweet_id"]} | o.to_dict() for g, o in zip(gold, outs)]
+        # drop the retrieved-exemplar text: nothing downstream reads it for ablations, and it
+        # would triple the file size with tweet text already committed via agent.jsonl
+        rows = [{"id": g["id"], "cust_tweet_id": g["cust_tweet_id"]} | {k: v for k, v in o.to_dict().items() if k != "exemplars"} for g, o in zip(gold, outs)]
         write_jsonl(PRED / f"ablation_{variant}.jsonl", rows)
         print(f"{variant}: {collections.Counter(r['action'] for r in rows)}  -> ablation_{variant}.jsonl")
     print(f"llm calls={client.n_calls} cache hits={client.n_cache_hits}")

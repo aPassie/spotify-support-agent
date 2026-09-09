@@ -129,3 +129,4 @@ htmlcov/
 Thumbs.db
 ehthumbs.db
 desktop.ini
+outputs/metrics/agent_failures.jsonl

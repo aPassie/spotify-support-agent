@@ -8,10 +8,10 @@ turn. Spotify sits in a useful middle: 26,000 first-turn exchanges and a **37% D
 and Hulu almost never move to DM (nothing to learn about escalation), T-Mobile and Comcast almost
 always do (nothing to automate). A brand that does both teaches both halves of the job.
 
-Spotify support on Twitter is not a resolution channel; it is a **triage and deflection** channel.
+Spotify support on Twitter is not a resolution channel. It is a **triage and deflection** channel.
 Across a few hundred exchanges, a good public reply is one of five things: a troubleshooting step,
-a help-centre link, an explanation of why something is the way it is (licensing, plan limits), an
-acknowledgement that routes feedback onward, or a clean hand-off to DM. So "good" here is:
+a help-centre link, an explanation of a limit such as licensing or plan rules, an acknowledgement
+that routes feedback onward, or a clean hand-off to DM. So "good" here means:
 
 - **Never send a public reply where a human was needed.** A wrong public reply on a billing or
   login problem is worse than silence: it is public, it is quotable, and it burns the customer's
@@ -29,14 +29,14 @@ metric is "of the tweets we auto-answered, how many should we have".
   channel the dataset does not contain. Modelling it would mean modelling text I cannot see.
 - **No fine-tuning.** With 19.5k exchanges available at inference time, retrieval buys the same
   brand-voice grounding as a LoRA, stays inspectable, and updates when the brand changes its links.
-- **No LLM in the classification loop.** The LLM labels 3,000 historical tweets once; a TF-IDF and
-  logistic-regression classifier learns from those and runs in microseconds, with a probability the
-  policy can threshold. The LLM is used only where it earns its cost: drafting.
-- **No agent initials.** SpotifyCares signs 97% of replies with a human's initials ("/JN"); the
+- **No LLM in the classification loop.** The LLM labels 3,000 historical tweets once. A TF-IDF
+  and logistic-regression classifier learns from those and runs in microseconds, with a
+  probability the policy can threshold. The LLM is used only where it earns its cost: drafting.
+- **No agent initials.** SpotifyCares signs 97% of replies with a human's initials ("/JN"). The
   agent never does. Imitating a named human is the one stylistic feature the brand should not want
   copied, and it would make the automation undisclosed.
-- **No sentiment model.** Anger is not the escalation trigger here; account state is. An angry
-  playback complaint is still publicly answerable, a polite billing question is not.
+- **No sentiment model.** Anger is not the escalation trigger here, account state is. An angry
+  playback complaint is still publicly answerable. A polite billing question is not.
 
 ## 2. The system
 
@@ -47,7 +47,7 @@ conditioned on 4 exemplars, followed by hard guardrails. Escalated tweets get on
 hand-off templates, with the draft attached as an internal suggestion for the human.
 
 **The taxonomy came from the data.** I clustered the 24,000 English root tweets (TF-IDF, LSA to 120
-dims, k-means) and read samples per cluster; 11 intents survived. Clustering also gave the
+dims, k-means) and read samples per cluster. Eleven intents survived. Clustering also gave the
 escalation policy for free: the brand's own DM rate per cluster is bimodal, confirmed by the silver
 labels on 3,000 tweets.
 
@@ -77,20 +77,25 @@ Both thresholds were chosen on held-out **historical** data with `scripts/tune_t
 never on the golden set: 0.40 was the loosest threshold keeping leakage (auto-handled items whose
 true intent is escalate-only) at or under 10%.
 
-Escalation also fires on intent-independent evidence: PII in a public tweet, legal or safety
-language, a possible account compromise, a refund demand, a non-English message, a media-only
-tweet, no sufficiently similar precedent, or a majority of similar past cases having gone to DM.
-Every escalation carries stable reason ids, so I can measure *why* the system escalates.
+Escalation also fires on evidence independent of the intent: personal data in a public tweet,
+legal or safety language, a possible account compromise, a refund demand, a non-English message,
+a media-only tweet, no similar precedent, or most similar past cases having gone to DM.
 
-**Guardrails, after generation.** Links absent from the retrieved exemplars are stripped (0 of 200
-replies contained a link the brand had never used); handles and initials are removed; replies over
-280 characters are cut at a sentence boundary; a promise of a refund or fix, or a request for a
-password or card details, flips the decision to escalate.
+Every escalation carries a stable reason id, so I can measure *why* the system escalates.
+
+**Guardrails, after generation.** Four checks run on every draft:
+
+- links absent from the retrieved exemplars are stripped (0 of 200 replies carried a link the
+  brand had never used)
+- handles and agent initials are removed
+- replies over 280 characters are cut at a sentence boundary
+- a promise of a refund or fix, or a request for a password or card details, flips the decision
+  to escalate
 
 ## 3. The golden set
 
 200 root tweets from **2017-11-20 to 2017-12-03**, strictly after every tweet used for retrieval,
-silver labels or training. 160 are a uniform random sample; 40 are keyword-targeted extras so
+silver labels or training. 160 are a uniform random sample. The other 40 are keyword-targeted extras so
 that rare intents have a usable count. Because the targeted items are easier for a keyword
 baseline, **all headline numbers are on the 160-item random stratum**.
 
@@ -122,7 +127,7 @@ baseline is safe by construction and worth zero: it deflects nothing.
 
 Because every system sees the same 160 items, the comparison is paired, so McNemar's exact test
 applies. On unsafe replies the agent errs alone on 1 item and the simple baseline on 18
-(p = 7.6e-05); on intent the agent errs alone on 15 and the baseline on 45 (p = 1.3e-04). Both
+(p = 7.6e-05). On intent the agent errs alone on 15 and the baseline on 45 (p = 1.3e-04). Both
 advantages are real and not an artefact of sample size. Against the trivial baseline the unsafe
 comparison is meaningless by construction (it never auto-answers), which is the point of including
 it: it exists to show that the safety number is trivially gameable by refusing to work.
@@ -153,7 +158,7 @@ exchanges.
 | simple | **3.61** | **0.62** | **2.15** |
 | agent | 3.52 | 0.59 | **2.85** |
 
-**The judge puts the copy-paste baseline first; I put it last.** The mechanism: the judge sees the
+**The judge puts the copy-paste baseline first. I put it last.** The mechanism: the judge sees the
 real historical reply as a reference, and that baseline *is* a real historical reply, so it matches
 the reference's style perfectly. What the judge misses is that the reply belongs to a different
 customer. A deterministic check finds it:
@@ -177,7 +182,8 @@ human ratings and the deterministic checks, not the judge mean.
 
 ## 5. Which components earn their place (ablations)
 
-Each variant swaps exactly one component, scored on the same items. `make ablate` reproduces this.
+Each variant swaps exactly one component, scored on the same 200 items. `make ablate` reproduces
+this; per-variant judge detail is in `outputs/metrics/tables.md`.
 
 | variant | auto-handle rate | auto precision | unsafe replies (of 160) | judge mean | what it tells us |
 |---|---|---|---|---|---|
@@ -189,8 +195,7 @@ Each variant swaps exactly one component, scored on the same items. `make ablate
 
 **Removing the escalation policy multiplies unsafe replies by 30 (2 to 59) and *raises* the judge's
 score to the best of any variant.** A team optimising the judge number would delete the safety
-policy and watch the metric improve. That is the strongest argument here against trusting a
-reply-quality score as a system metric.
+policy and watch the metric improve.
 
 **The silver-label classifier pays for itself in coverage, not safety.** Keyword rules keep auto
 precision within noise (0.929 against 0.970, overlapping CIs) but collapse coverage from 41.9% to
@@ -203,12 +208,17 @@ what Spotify does.
 
 **Embedding retrieval fixes the mismatches on inspection but cannot be shown to help.** Dense
 retrieval finds the right precedent where TF-IDF matched on shared vocabulary. Two caveats keep it
-out of the headline: its apparent coverage gain was purely an artefact of a similarity threshold
-not recalibrated for a new scale, which I corrected; and a blinded paired comparison of the 30
-sampled items where the two differ gives embeddings 61.9% of decided pairs, CI [0.384, 0.819],
+out of the headline. First, its apparent coverage gain was an artefact of a similarity threshold
+not recalibrated for the new scale, which I corrected. Second, a blinded paired comparison of 30
+of the 78 items where the two differ gives embeddings 61.9% of decided pairs, CI [0.384, 0.819],
 p = 0.38. An 80%-powered test needs 137 decided pairs and only 78 items differ at all, so this
-golden set can never settle it. Mechanism right, measurement underpowered; it stays a measured
-negative. Full detail in `ABLATIONS.md`.
+golden set can never settle it. The mechanism is right and the measurement is underpowered.
+
+One example, since the aggregate hides it. On g027 (*"I updated iOS yesterday and ever since ... it
+will randomly pause it"*) TF-IDF's nearest case was an iOS complaint about *missing songs* at 0.34
+similarity, and the draft asked about missing songs. Dense retrieval found *"my app and phone are
+up to date but the Spotify keeps pausing randomly"* at 0.92, and the draft asks for the iOS and
+Spotify versions.
 
 ## 6. Top 5 failure modes
 
@@ -224,13 +234,14 @@ issue, and the prompt tells the model to follow the exemplars. Partly confirmed:
 finds the right precedent on all three (section 5), though I could not measure the reply gain.
 
 **2. `other` is a high-prior sink that pulls tweets into needless escalation.** 13 of the 42
-over-escalations are tweets that landed in `other`. Examples: *"Wow... I log in to Spotify for the
-first time in years and I get a 503 error"* (0.39 confidence, truly playback), *"Okay I thought I
-was the only one. But Spotify is down"* (0.39, truly playback), *"how do I go about buying annual
-membership please ??!!!"* (0.54, truly plan_and_offers). Cause: `other` holds 11.8% of silver labels and spans venting, jokes, artist questions and support-process complaints, so it has both a
-high prior and no coherent lexical signature. Fix: split it into `praise_or_thanks` (already done,
-which is where the class came from), `creator_or_business`, and `support_process_complaint`, and
-leave a genuinely small residual.
+over-escalations landed in `other`. Three examples, with the confidence and the true intent:
+*"I log in to Spotify for the first time in years and I get a 503 error"* (0.39, playback),
+*"Okay I thought I was the only one. But Spotify is down"* (0.39, playback), *"how do I go about
+buying annual membership please ??!!!"* (0.54, plan_and_offers).
+
+Cause: `other` holds 11.8% of silver labels, spanning venting, jokes, artist questions and
+support-process complaints, so it has a high prior and no coherent lexical signature. Fix: split
+out `creator_or_business` and `support_process_complaint`, as I already did `praise_or_thanks`.
 
 **3. Outage traffic is time-sensitive and the agent has no notion of "now".** The eval window
 contains a real Spotify incident: 11 of 200 golden items are outage tweets. Spotify's own replies
@@ -242,9 +253,9 @@ status-page signal as a first-class input, plus an incident mode.
 
 **4. Root-only modelling loses follow-up context, producing one of the two unsafe auto-replies.**
 g095: *"Still nothing, even when I'm on WiFi. Any solution to this? Seems like a fatal flaw in your
-login system."* It is a follow-up whose real issue is login, needing account access; alone it reads
-as connectivity, so the agent classified it `playback_technical` (0.43) and publicly asked for iOS
-and app versions. The other unsafe reply, g165, is an album-recommendation request classified
+login system."* It is a follow-up whose real issue is login, needing account access. Alone it
+reads as connectivity, so the agent classified it `playback_technical` (0.43) and publicly asked
+for iOS and app versions. The other unsafe reply, g165, is an album-recommendation request classified
 `content_availability` and answered with a licensing link. Fix: use the thread-context columns
 `data.py` already builds, and treat "still", "again" and "as I said" as continuation signals.
 
@@ -256,35 +267,34 @@ Roku app"* got a generic feedback acknowledgement instead of Spotify's Roku answ
 intents stay rare. Fix: active sampling for the silver pass, targeting low-confidence and
 keyword-matched examples for the small classes.
 
-Honourable mention: an abusive tweet (*"fix your app cunts"*) was auto-answered with a polite
-request for detail. It is not wrong, but abuse should probably be its own route.
+A sixth, smaller one: an abusive tweet was auto-answered with a polite request for detail. Not
+wrong, but abuse should be its own route.
 
 ## 7. What is misleading about my headline number
 
-The headline is "41.9% auto-handled at 0.970 precision, 2 unsafe replies against 19". Five reasons
+The headline is "41.9% auto-handled at 0.970 precision, 2 unsafe replies against 19". Six reasons
 to discount it.
 
 **The 0.970 is 2 errors out of 67 auto-handled items, Wilson 95% CI [0.898, 0.992].** I can defend
-"much safer than copy-the-nearest-case"; I cannot defend the third decimal. The same interval means
+"much safer than copy-the-nearest-case". I cannot defend the third decimal. The same interval means
 the true unsafe rate could plausibly be 3x what I measured.
 
 **I wrote the labels and built the system, with no second annotator.** Every escalation boundary
 case was decided by the person who also chose the policy. The rule "a public reply is fine if a
-help-centre answer exists" is mine, and a support lead might draw it elsewhere; my labels already
-disagree with Spotify's own behaviour on 34 of 200 items. `LABELING.md` marks roughly 20 items
+help-centre answer exists" is mine, and a support lead might draw it elsewhere. My labels already
+disagree with Spotify's own behaviour on 34 of 200 items. `LABELING.md` flags 16 items
 where a second labeller could reasonably differ, enough to move auto precision by a couple of
 points. Inter-annotator agreement is unknown, not high.
 
 **Precision is measured only on what the agent chose to answer, which is the easy half.** It
-conditions on the agent's own decision, so a system that answers only trivially easy tweets scores
-beautifully. Hence the coverage column beside it, and hence the trivial baseline's worthless
-"no errors".
+conditions on the agent's own decision, so a system that answers only the easy tweets scores well.
+Coverage has to be read beside it, which is also why the trivial baseline's zero errors is worth
+nothing.
 
 **Reply quality is the weakest evidence.** My human ratings cover 20 items per system, 60 total,
 rated by me, and the trivial baseline is identifiable from its constant text, so blinding is
 imperfect. The agent's mean human rating is 2.85 of 5: better than both baselines, still below
-"good". The judge cannot substitute, since it ranks the systems in the wrong order. Honest summary:
-the replies are noticeably better than the alternatives and not yet good.
+"good". The judge cannot substitute, since it ranks the systems in the wrong order.
 
 **Two weeks of one brand in 2017, part of it an outage.** The eval window is 11% outage tweets,
 which inflates the apparently-public share of traffic and understates difficulty, since
@@ -297,17 +307,14 @@ everything scores the *best* judge mean (3.67 against 3.52) while sending 59 uns
 of 2. A headline built on reply quality is anti-correlated with what I claim to care about, over
 exactly the change a team would be tempted to make. The two numbers must be read together.
 
-Two things I will defend without hedging. First, the 39% wrong-name rate of the copy-paste
-baseline against 0% for the agent: a deterministic count over all 200 items with no labelling
-judgement in it, and the clearest reason to prefer generation-with-guardrails over template reuse.
-Second, the paired significance of the escalation advantage over that baseline (p = 7.6e-05),
-which does not depend on my absolute precision estimate being well calibrated, only on the sign of
-the per-item disagreements.
+Two claims survive all of that. The 39% wrong-name rate of the copy-paste baseline against 0% for
+the agent is a count over all 200 items with no labelling judgement in it. And the paired
+significance of the escalation advantage (p = 7.6e-05) depends only on the sign of the per-item
+disagreements, not on my precision estimate being well calibrated.
 
-And one thing I explicitly do **not** claim: that embedding retrieval improves reply quality.
-The examples say it does, the blinded paired test cannot confirm it at n=21 decided pairs, and the
-golden set is too small to ever confirm an effect that size. It is in the report as a measured
-negative, not as an improvement.
+One claim I am not making: that embedding retrieval improves reply quality. The examples suggest it
+does, the blinded test cannot confirm it at 21 decided pairs, and the golden set is too small to
+ever confirm an effect that size.
 
 ## 8. What I would do with one more week
 
@@ -321,13 +328,13 @@ negative, not as an improvement.
 3. **Incident awareness.** A status signal as an input, an incident intent, and a rule suppressing
    replayed "everything is fine now" precedents when current status is unknown.
 4. **Retire the LLM judge for ranking, keep it for triage.** The pairwise harness is built
-   (`supportagent.pairwise`); the next step is to run the *judge* through it as a pairwise judge
+   (`supportagent.pairwise`). The next step is to run the *judge* through it as a pairwise judge
    and re-measure agreement, since absolute scoring is where it fails. Promote the deterministic
    checks (wrong name, invented link, false DM claim, promise) to blocking tests in CI, because
    they caught what the judge missed.
 5. **Split `other`, and active-sample the silver pass** for the small classes, addressing failure
    modes 2 and 5 together.
-6. **Report a business-shaped number.** Auto precision is an ML metric; a support lead needs
+6. **Report a business-shaped number.** Auto precision is an ML metric. A support lead needs
    deflected contacts per week against the expected cost of a wrong public reply, with escalation
    reasons attached so the queue arrives pre-triaged. That framing also makes the coverage and
    precision trade the lead's decision rather than mine.
