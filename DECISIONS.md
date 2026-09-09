@@ -1,6 +1,6 @@
 # Decision log
 
-Fifteen non-obvious decisions, in the order they were made. Each is something a reviewer might
+Sixteen non-obvious decisions, in the order they were made. Each is something a reviewer might
 reasonably have decided differently. Numbers referenced here are reproduced by `make reproduce`.
 
 1. **Brand chosen from a table, not a hunch.** I profiled the 40 highest-volume brands on volume,
@@ -95,6 +95,14 @@ reasonably have decided differently. Numbers referenced here are reproduced by `
     TF-IDF's 0.40, so the `no_precedent` guard silently stopped firing; the threshold is now
     percentile-matched. Both were caught by the evaluation rather than by reading the code, which
     is the argument for building the harness first.
+
+16. **Banking77 was offered and not used.** The brief allows it as an optional secondary dataset
+    for intent work. Its 77 intents are banking-specific (card arrival, exchange rates, top-up
+    failures) and none transfers to music streaming, so pre-training on it would have imported a
+    taxonomy that does not fit the traffic. More importantly, deriving intents from Spotify's own
+    tweets is what let the escalation policy be grounded in Spotify's own DM behaviour per intent
+    (decision 4), which is the argument the whole system rests on. A borrowed taxonomy would have
+    broken that link.
 
 ## Engineering notes that are not really decisions
 

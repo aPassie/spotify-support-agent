@@ -163,4 +163,6 @@ Two practical notes if you run this on a memory-constrained laptop. Pass `--no-m
   (Alibaba, GGUF by Unsloth), gemma-3-4b-it (Google, GGUF by Unsloth).
 - Libraries: scikit-learn (TF-IDF, logistic regression, metrics), lingua (language id),
   rouge-score, pandas, matplotlib, openai (client only).
+- Not used: Banking77 (`PolyAI/banking77`), offered by the brief as an optional secondary source
+  for intent work; see `DECISIONS.md` #16 for why.
 - The escalation-reason taxonomy, the labelling protocol and all prompts are my own.
