@@ -113,6 +113,12 @@ the derived parquet files, the model weights and the 44 MB retrieval index; `mak
 
 Both served by llama.cpp (Vulkan) on an RTX 4060 Laptop, 8 GB. No paid API was used.
 
+Two practical notes if you run this on a memory-constrained laptop. Pass `--no-mmap` (as
+`scripts/setup_llm.sh` does): with all layers offloaded, it cut the server's *host* memory from
+7.4 GB to 0.5 GB on a 14 GB machine. And run the generator and judge one at a time via
+`make llm-stop`; the Vulkan backend's host memory also grows with request volume, reaching about
+7 GB after the ~600-call judge pass, so two servers plus a desktop session will swap.
+
 ## Credits
 
 - Dataset: *Customer Support on Twitter* by Stuart Axelbrooke (Kaggle `thoughtvector/customer-support-on-twitter`),
