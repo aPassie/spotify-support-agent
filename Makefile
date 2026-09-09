@@ -44,7 +44,7 @@ llm-judge:        ## download judge model and start it on :8081
 	bash scripts/setup_llm.sh judge
 
 llm-stop:
-	-pkill -f 'llama-server .*--port 808[01]'
+	-pkill -x llama-server
 
 test:
 	$(PY) -m pytest -q tests
