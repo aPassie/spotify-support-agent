@@ -10,7 +10,20 @@ incoming customer tweet it does three things:
 
 The brand is **SpotifyCares**, picked from a profile of the 40 highest-volume brands
 (see `DECISIONS.md` #1). The interesting claim is not the system, it is the evaluation, so
-start with `REPORT.md`.
+start with **[REPORT.md](REPORT.md)**.
+
+### Where each deliverable lives
+
+| asked for | here |
+|---|---|
+| Repo with a runnable pipeline, headline reproducible in < 15 min | this repo; `make setup && make reproduce` takes ~2 seconds |
+| Golden evaluation set, 150-250 hand-labelled, + note on sampling and labelling | [`golden/golden.jsonl`](golden/golden.jsonl) (200 items), protocol in [`golden/LABELING.md`](golden/LABELING.md) |
+| Evaluation harness: automated metrics + LLM-judge rubric + judge/human agreement | `src/supportagent/evaluate.py` and `judge.py`; numbers in [`outputs/metrics/tables.md`](outputs/metrics/tables.md); 60 human ratings in [`golden/human_ratings.csv`](golden/human_ratings.csv) |
+| Report: framing, what I did not build, 2+ baselines, top-5 failures, misleading-number section, next week | **[REPORT.md](REPORT.md)** (~6 pages), with [`ABLATIONS.md`](ABLATIONS.md) as an appendix |
+| Decision log, 10-15 non-obvious decisions | [`DECISIONS.md`](DECISIONS.md) (16) |
+
+The mandatory *"what is misleading about my headline number?"* section is
+[REPORT.md section 7](REPORT.md#7-what-is-misleading-about-my-headline-number).
 
 ## Headline result
 
