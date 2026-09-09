@@ -41,7 +41,8 @@ confusion figure and `agent_failures.jsonl`. No model is called, so the numbers 
 ones in the report.
 
 ```bash
-make test        # 10 unit tests: text normalisation, escalation policy, guardrails
+make test        # 35 tests: text normalisation, escalation policy, guardrails, and a check
+                 # that every number quoted in REPORT.md still matches outputs/metrics/
 ```
 
 ## Ablations: which components earn their place
