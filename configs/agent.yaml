@@ -1,0 +1,28 @@
+brand: SpotifyCares
+# Temporal split: everything before eval_start is "history" (retrieval corpus, silver
+# labels, classifier training); the golden set is sampled from eval_start onwards.
+eval_start: "2017-11-20"
+retrieval:
+  k: 5
+  min_similarity: 0.25        # below this -> escalate with reason no_precedent
+policy:
+  # The decision that matters is auto vs escalate, so the gate is on the probability mass the
+  # classifier puts on escalate-only intents, not on top-1 confidence: being unsure between two
+  # publicly-answerable intents is harmless, being unsure between playback and billing is not.
+  # Both thresholds were tuned on held-out historical (silver-labelled) data - never on the
+  # golden set - by scripts/tune_thresholds.py.
+  escalate_prob_threshold: 0.40   # P(intent is escalate-only) >= this -> escalate
+  min_top_confidence: 0.25        # top-1 below this -> no usable signal -> low_confidence
+  neighbor_dm_rate_escalate: 0.6  # if >= this share of similar past cases went to DM -> escalate
+  max_reply_chars: 280
+silver:
+  n_examples: 3000
+  seed: 0
+golden:
+  n_random: 160
+  n_targeted_per_intent: 8
+  targeted_intents: [ads_complaint, device_integration, downloads_offline, content_availability, feature_request_feedback]
+  seed: 0
+llm:
+  generator_model_note: "Qwen3-4B-Instruct-2507 Q4_K_M via llama.cpp (see scripts/setup_llm.sh)"
+  judge_model_note: "gemma-3-4b-it Q4_K_M via llama.cpp (different family from the generator)"

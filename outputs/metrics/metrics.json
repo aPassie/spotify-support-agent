@@ -1,0 +1,749 @@
+{
+ "n_golden": 200,
+ "n_random": 160,
+ "systems": {
+  "agent": {
+   "random": {
+    "intent": {
+     "accuracy": 0.68125,
+     "macro_f1": 0.5586044938121901,
+     "per_class_f1": {
+      "account_access": 0.9444444444444444,
+      "billing_payment": 0.8181818181818182,
+      "plan_and_offers": 0.7547169811320755,
+      "playback_technical": 0.7037037037037037,
+      "downloads_offline": 0.8,
+      "content_availability": 0.6521739130434783,
+      "feature_request_feedback": 0.5714285714285714,
+      "ads_complaint": 0.0,
+      "device_integration": 0.0,
+      "praise_or_thanks": 0.4,
+      "other": 0.5
+     },
+     "support": {
+      "account_access": 18,
+      "billing_payment": 11,
+      "plan_and_offers": 31,
+      "playback_technical": 27,
+      "downloads_offline": 3,
+      "content_availability": 25,
+      "feature_request_feedback": 23,
+      "ads_complaint": 0,
+      "device_integration": 2,
+      "praise_or_thanks": 4,
+      "other": 16
+     }
+    },
+    "escalation": {
+     "coverage_auto_rate": 0.41875,
+     "escalate_precision": 0.6129032258064516,
+     "escalate_recall": 0.9661016949152542,
+     "unsafe_auto_rate": 0.03389830508474576,
+     "auto_precision": 0.9701492537313433,
+     "n_unsafe_auto": 2,
+     "n_over_escalated": 36,
+     "confusion": {
+      "tp": 57,
+      "fp": 36,
+      "fn": 2,
+      "tn": 65
+     }
+    },
+    "reply_auto": {
+     "mean_len": 132.875,
+     "pct_over_280": 0.0,
+     "pct_with_url": 0.53125,
+     "pct_unknown_url": 0.0,
+     "pct_wrong_name": 0.0,
+     "rougeL_vs_hist": 0.38463770890846716
+    },
+    "judge": {
+     "n": 160,
+     "mean_overall": 3.55,
+     "pct_ge4": 0.6,
+     "pct_le2": 0.2375,
+     "pass_addresses_issue": 0.8,
+     "pass_consistent_with_brand_practice": 0.625,
+     "pass_actionable": 0.8125,
+     "pass_safe": 0.96875,
+     "pass_on_brand_tone": 0.98125,
+     "label_auto_ok_n": 101,
+     "label_auto_ok_mean": 3.4554455445544554,
+     "label_auto_ok_pct_ge4": 0.5445544554455446,
+     "label_escalate_n": 59,
+     "label_escalate_mean": 3.711864406779661,
+     "label_escalate_pct_ge4": 0.6949152542372882,
+     "system_auto_n": 67,
+     "system_auto_mean": 3.8208955223880596,
+     "system_auto_pct_ge4": 0.6865671641791045,
+     "system_escalate_n": 93,
+     "system_escalate_mean": 3.3548387096774195,
+     "system_escalate_pct_ge4": 0.5376344086021505
+    }
+   },
+   "all": {
+    "intent": {
+     "accuracy": 0.665,
+     "macro_f1": 0.6271459620948213,
+     "per_class_f1": {
+      "account_access": 0.918918918918919,
+      "billing_payment": 0.7741935483870968,
+      "plan_and_offers": 0.7619047619047619,
+      "playback_technical": 0.6461538461538462,
+      "downloads_offline": 0.6,
+      "content_availability": 0.6296296296296297,
+      "feature_request_feedback": 0.6133333333333333,
+      "ads_complaint": 0.6666666666666666,
+      "device_integration": 0.4,
+      "praise_or_thanks": 0.4,
+      "other": 0.4878048780487805
+     },
+     "support": {
+      "account_access": 18,
+      "billing_payment": 17,
+      "plan_and_offers": 35,
+      "playback_technical": 32,
+      "downloads_offline": 7,
+      "content_availability": 27,
+      "feature_request_feedback": 33,
+      "ads_complaint": 3,
+      "device_integration": 8,
+      "praise_or_thanks": 4,
+      "other": 16
+     }
+    },
+    "escalation": {
+     "coverage_auto_rate": 0.46,
+     "escalate_precision": 0.6111111111111112,
+     "escalate_recall": 0.9705882352941176,
+     "unsafe_auto_rate": 0.029411764705882353,
+     "auto_precision": 0.9782608695652174,
+     "n_unsafe_auto": 2,
+     "n_over_escalated": 42,
+     "confusion": {
+      "tp": 66,
+      "fp": 42,
+      "fn": 2,
+      "tn": 90
+     }
+    },
+    "reply_auto": {
+     "mean_len": 135.455,
+     "pct_over_280": 0.0,
+     "pct_with_url": 0.52,
+     "pct_unknown_url": 0.0,
+     "pct_wrong_name": 0.0,
+     "rougeL_vs_hist": 0.38381839763579007
+    },
+    "judge": {
+     "n": 200,
+     "mean_overall": 3.525,
+     "pct_ge4": 0.59,
+     "pct_le2": 0.24,
+     "pass_addresses_issue": 0.81,
+     "pass_consistent_with_brand_practice": 0.615,
+     "pass_actionable": 0.815,
+     "pass_safe": 0.96,
+     "pass_on_brand_tone": 0.985,
+     "label_auto_ok_n": 132,
+     "label_auto_ok_mean": 3.409090909090909,
+     "label_auto_ok_pct_ge4": 0.5227272727272727,
+     "label_escalate_n": 68,
+     "label_escalate_mean": 3.75,
+     "label_escalate_pct_ge4": 0.7205882352941176,
+     "system_auto_n": 92,
+     "system_auto_mean": 3.739130434782609,
+     "system_auto_pct_ge4": 0.6521739130434783,
+     "system_escalate_n": 108,
+     "system_escalate_mean": 3.3425925925925926,
+     "system_escalate_pct_ge4": 0.5370370370370371
+    }
+   }
+  },
+  "trivial": {
+   "random": {
+    "intent": {
+     "accuracy": 0.14375,
+     "macro_f1": 0.022851465474416296,
+     "per_class_f1": {
+      "account_access": 0.0,
+      "billing_payment": 0.0,
+      "plan_and_offers": 0.0,
+      "playback_technical": 0.0,
+      "downloads_offline": 0.0,
+      "content_availability": 0.0,
+      "feature_request_feedback": 0.25136612021857924,
+      "ads_complaint": 0.0,
+      "device_integration": 0.0,
+      "praise_or_thanks": 0.0,
+      "other": 0.0
+     },
+     "support": {
+      "account_access": 18,
+      "billing_payment": 11,
+      "plan_and_offers": 31,
+      "playback_technical": 27,
+      "downloads_offline": 3,
+      "content_availability": 25,
+      "feature_request_feedback": 23,
+      "ads_complaint": 0,
+      "device_integration": 2,
+      "praise_or_thanks": 4,
+      "other": 16
+     }
+    },
+    "escalation": {
+     "coverage_auto_rate": 0.0,
+     "escalate_precision": 0.36875,
+     "escalate_recall": 1.0,
+     "unsafe_auto_rate": 0.0,
+     "auto_precision": 0.0,
+     "n_unsafe_auto": 0,
+     "n_over_escalated": 101,
+     "confusion": {
+      "tp": 59,
+      "fp": 101,
+      "fn": 0,
+      "tn": 0
+     }
+    },
+    "reply_auto": {
+     "mean_len": 132.0,
+     "pct_over_280": 0.0,
+     "pct_with_url": 1.0,
+     "pct_unknown_url": 0.0,
+     "pct_wrong_name": 0.0,
+     "rougeL_vs_hist": 0.33284148777518585
+    },
+    "judge": {
+     "n": 160,
+     "mean_overall": 2.8625,
+     "pct_ge4": 0.34375,
+     "pct_le2": 0.56875,
+     "pass_addresses_issue": 0.55625,
+     "pass_consistent_with_brand_practice": 0.35625,
+     "pass_actionable": 0.49375,
+     "pass_safe": 0.65,
+     "pass_on_brand_tone": 0.7,
+     "label_auto_ok_n": 101,
+     "label_auto_ok_mean": 2.3465346534653464,
+     "label_auto_ok_pct_ge4": 0.1188118811881188,
+     "label_escalate_n": 59,
+     "label_escalate_mean": 3.7457627118644066,
+     "label_escalate_pct_ge4": 0.7288135593220338,
+     "system_escalate_n": 160,
+     "system_escalate_mean": 2.8625,
+     "system_escalate_pct_ge4": 0.34375
+    }
+   },
+   "all": {
+    "intent": {
+     "accuracy": 0.165,
+     "macro_f1": 0.02575107296137339,
+     "per_class_f1": {
+      "account_access": 0.0,
+      "billing_payment": 0.0,
+      "plan_and_offers": 0.0,
+      "playback_technical": 0.0,
+      "downloads_offline": 0.0,
+      "content_availability": 0.0,
+      "feature_request_feedback": 0.2832618025751073,
+      "ads_complaint": 0.0,
+      "device_integration": 0.0,
+      "praise_or_thanks": 0.0,
+      "other": 0.0
+     },
+     "support": {
+      "account_access": 18,
+      "billing_payment": 17,
+      "plan_and_offers": 35,
+      "playback_technical": 32,
+      "downloads_offline": 7,
+      "content_availability": 27,
+      "feature_request_feedback": 33,
+      "ads_complaint": 3,
+      "device_integration": 8,
+      "praise_or_thanks": 4,
+      "other": 16
+     }
+    },
+    "escalation": {
+     "coverage_auto_rate": 0.0,
+     "escalate_precision": 0.34,
+     "escalate_recall": 1.0,
+     "unsafe_auto_rate": 0.0,
+     "auto_precision": 0.0,
+     "n_unsafe_auto": 0,
+     "n_over_escalated": 132,
+     "confusion": {
+      "tp": 68,
+      "fp": 132,
+      "fn": 0,
+      "tn": 0
+     }
+    },
+    "reply_auto": {
+     "mean_len": 132.0,
+     "pct_over_280": 0.0,
+     "pct_with_url": 1.0,
+     "pct_unknown_url": 0.0,
+     "pct_wrong_name": 0.0,
+     "rougeL_vs_hist": 0.3350733676863458
+    },
+    "judge": {
+     "n": 200,
+     "mean_overall": 2.815,
+     "pct_ge4": 0.325,
+     "pct_le2": 0.585,
+     "pass_addresses_issue": 0.57,
+     "pass_consistent_with_brand_practice": 0.345,
+     "pass_actionable": 0.5,
+     "pass_safe": 0.645,
+     "pass_on_brand_tone": 0.72,
+     "label_auto_ok_n": 132,
+     "label_auto_ok_mean": 2.3181818181818183,
+     "label_auto_ok_pct_ge4": 0.10606060606060606,
+     "label_escalate_n": 68,
+     "label_escalate_mean": 3.7794117647058822,
+     "label_escalate_pct_ge4": 0.75,
+     "system_escalate_n": 200,
+     "system_escalate_mean": 2.815,
+     "system_escalate_pct_ge4": 0.325
+    }
+   }
+  },
+  "simple": {
+   "random": {
+    "intent": {
+     "accuracy": 0.49375,
+     "macro_f1": 0.471695570040222,
+     "per_class_f1": {
+      "account_access": 0.7777777777777778,
+      "billing_payment": 0.75,
+      "plan_and_offers": 0.7083333333333334,
+      "playback_technical": 0.46153846153846156,
+      "downloads_offline": 0.4,
+      "content_availability": 0.3684210526315789,
+      "feature_request_feedback": 0.3225806451612903,
+      "ads_complaint": 0.0,
+      "device_integration": 0.6666666666666666,
+      "praise_or_thanks": 0.4,
+      "other": 0.3333333333333333
+     },
+     "support": {
+      "account_access": 18,
+      "billing_payment": 11,
+      "plan_and_offers": 31,
+      "playback_technical": 27,
+      "downloads_offline": 3,
+      "content_availability": 25,
+      "feature_request_feedback": 23,
+      "ads_complaint": 0,
+      "device_integration": 2,
+      "praise_or_thanks": 4,
+      "other": 16
+     }
+    },
+    "escalation": {
+     "coverage_auto_rate": 0.625,
+     "escalate_precision": 0.6666666666666666,
+     "escalate_recall": 0.6779661016949152,
+     "unsafe_auto_rate": 0.3220338983050847,
+     "auto_precision": 0.81,
+     "n_unsafe_auto": 19,
+     "n_over_escalated": 20,
+     "confusion": {
+      "tp": 40,
+      "fp": 20,
+      "fn": 19,
+      "tn": 81
+     }
+    },
+    "reply_auto": {
+     "mean_len": 118.70625,
+     "pct_over_280": 0.0,
+     "pct_with_url": 0.5,
+     "pct_unknown_url": 0.0,
+     "pct_wrong_name": 0.4,
+     "rougeL_vs_hist": 0.302880964772989
+    },
+    "judge": {
+     "n": 160,
+     "mean_overall": 3.6375,
+     "pct_ge4": 0.6375,
+     "pct_le2": 0.26875,
+     "pass_addresses_issue": 0.89375,
+     "pass_consistent_with_brand_practice": 0.68125,
+     "pass_actionable": 0.8125,
+     "pass_safe": 0.9625,
+     "pass_on_brand_tone": 0.975,
+     "label_auto_ok_n": 101,
+     "label_auto_ok_mean": 3.495049504950495,
+     "label_auto_ok_pct_ge4": 0.5841584158415841,
+     "label_escalate_n": 59,
+     "label_escalate_mean": 3.8813559322033897,
+     "label_escalate_pct_ge4": 0.7288135593220338,
+     "system_auto_n": 100,
+     "system_auto_mean": 3.55,
+     "system_auto_pct_ge4": 0.6,
+     "system_escalate_n": 60,
+     "system_escalate_mean": 3.783333333333333,
+     "system_escalate_pct_ge4": 0.7
+    }
+   },
+   "all": {
+    "intent": {
+     "accuracy": 0.51,
+     "macro_f1": 0.5265956468005563,
+     "per_class_f1": {
+      "account_access": 0.7777777777777778,
+      "billing_payment": 0.6857142857142857,
+      "plan_and_offers": 0.7017543859649122,
+      "playback_technical": 0.4090909090909091,
+      "downloads_offline": 0.5,
+      "content_availability": 0.391304347826087,
+      "feature_request_feedback": 0.391304347826087,
+      "ads_complaint": 0.36363636363636365,
+      "device_integration": 0.875,
+      "praise_or_thanks": 0.36363636363636365,
+      "other": 0.3333333333333333
+     },
+     "support": {
+      "account_access": 18,
+      "billing_payment": 17,
+      "plan_and_offers": 35,
+      "playback_technical": 32,
+      "downloads_offline": 7,
+      "content_availability": 27,
+      "feature_request_feedback": 33,
+      "ads_complaint": 3,
+      "device_integration": 8,
+      "praise_or_thanks": 4,
+      "other": 16
+     }
+    },
+    "escalation": {
+     "coverage_auto_rate": 0.635,
+     "escalate_precision": 0.6438356164383562,
+     "escalate_recall": 0.6911764705882353,
+     "unsafe_auto_rate": 0.3088235294117647,
+     "auto_precision": 0.8346456692913385,
+     "n_unsafe_auto": 21,
+     "n_over_escalated": 26,
+     "confusion": {
+      "tp": 47,
+      "fp": 26,
+      "fn": 21,
+      "tn": 106
+     }
+    },
+    "reply_auto": {
+     "mean_len": 119.25,
+     "pct_over_280": 0.0,
+     "pct_with_url": 0.495,
+     "pct_unknown_url": 0.0,
+     "pct_wrong_name": 0.39,
+     "rougeL_vs_hist": 0.30489733102479516
+    },
+    "judge": {
+     "n": 200,
+     "mean_overall": 3.61,
+     "pct_ge4": 0.625,
+     "pct_le2": 0.275,
+     "pass_addresses_issue": 0.9,
+     "pass_consistent_with_brand_practice": 0.66,
+     "pass_actionable": 0.805,
+     "pass_safe": 0.965,
+     "pass_on_brand_tone": 0.97,
+     "label_auto_ok_n": 132,
+     "label_auto_ok_mean": 3.4545454545454546,
+     "label_auto_ok_pct_ge4": 0.5681818181818182,
+     "label_escalate_n": 68,
+     "label_escalate_mean": 3.911764705882353,
+     "label_escalate_pct_ge4": 0.7352941176470589,
+     "system_auto_n": 127,
+     "system_auto_mean": 3.52755905511811,
+     "system_auto_pct_ge4": 0.5905511811023622,
+     "system_escalate_n": 73,
+     "system_escalate_mean": 3.7534246575342465,
+     "system_escalate_pct_ge4": 0.684931506849315
+    }
+   }
+  }
+ },
+ "agent_confusion": {
+  "labels": [
+   "account_access",
+   "billing_payment",
+   "plan_and_offers",
+   "playback_technical",
+   "downloads_offline",
+   "content_availability",
+   "feature_request_feedback",
+   "ads_complaint",
+   "device_integration",
+   "praise_or_thanks",
+   "other"
+  ],
+  "matrix": [
+   [
+    17,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    0,
+    12,
+    2,
+    0,
+    0,
+    0,
+    0,
+    2,
+    0,
+    0,
+    1
+   ],
+   [
+    0,
+    1,
+    24,
+    1,
+    0,
+    2,
+    3,
+    0,
+    0,
+    0,
+    4
+   ],
+   [
+    1,
+    0,
+    1,
+    21,
+    0,
+    1,
+    4,
+    1,
+    0,
+    0,
+    3
+   ],
+   [
+    0,
+    0,
+    0,
+    3,
+    3,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0,
+    17,
+    7,
+    0,
+    0,
+    0,
+    3
+   ],
+   [
+    0,
+    0,
+    0,
+    3,
+    0,
+    3,
+    23,
+    0,
+    0,
+    0,
+    4
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0
+   ],
+   [
+    1,
+    0,
+    0,
+    4,
+    0,
+    0,
+    1,
+    0,
+    2,
+    0,
+    0
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    0,
+    0,
+    1,
+    0
+   ],
+   [
+    0,
+    1,
+    1,
+    0,
+    0,
+    2,
+    2,
+    0,
+    0,
+    0,
+    10
+   ]
+  ]
+ },
+ "agent_reasons": [
+  [
+   "needs_account_access",
+   51
+  ],
+  [
+   "unclear_request",
+   25
+  ],
+  [
+   "historical_dm_pattern",
+   9
+  ],
+  [
+   "no_precedent",
+   7
+  ],
+  [
+   "language_routing",
+   7
+  ],
+  [
+   "payment_dispute",
+   5
+  ],
+  [
+   "pii_in_public",
+   2
+  ],
+  [
+   "low_confidence",
+   1
+  ],
+  [
+   "security_incident",
+   1
+  ]
+ ],
+ "agent_guardrails": [
+  [
+   "no_draft",
+   7
+  ],
+  [
+   "removed_handle",
+   3
+  ],
+  [
+   "too_long",
+   2
+  ],
+  [
+   "sensitive_ask",
+   1
+  ]
+ ],
+ "judge_vs_human": {
+  "all": {
+   "n": 60,
+   "spearman": 0.48925614519428484,
+   "kappa_quadratic": 0.32419659735349715,
+   "exact_agreement": 0.23333333333333334,
+   "within_one": 0.6,
+   "judge_mean": 3.45,
+   "human_mean": 2.433333333333333,
+   "judge_minus_human_mean": 1.0166666666666666
+  },
+  "trivial": {
+   "n": 20,
+   "spearman": 0.49720530028999194,
+   "kappa_quadratic": 0.3055555555555556,
+   "exact_agreement": 0.45,
+   "within_one": 0.6,
+   "judge_mean": 3.05,
+   "human_mean": 2.3,
+   "judge_minus_human_mean": 0.75
+  },
+  "simple": {
+   "n": 20,
+   "spearman": 0.5941722179081056,
+   "kappa_quadratic": 0.3121149897330596,
+   "exact_agreement": 0.1,
+   "within_one": 0.6,
+   "judge_mean": 3.6,
+   "human_mean": 2.15,
+   "judge_minus_human_mean": 1.45
+  },
+  "agent": {
+   "n": 20,
+   "spearman": 0.400255750314581,
+   "kappa_quadratic": 0.30743243243243246,
+   "exact_agreement": 0.15,
+   "within_one": 0.6,
+   "judge_mean": 3.7,
+   "human_mean": 2.85,
+   "judge_minus_human_mean": 0.85
+  },
+  "system_means": {
+   "trivial": {
+    "judge": 3.05,
+    "human": 2.3,
+    "n": 20
+   },
+   "simple": {
+    "judge": 3.6,
+    "human": 2.15,
+    "n": 20
+   },
+   "agent": {
+    "judge": 3.7,
+    "human": 2.85,
+    "n": 20
+   }
+  }
+ }
+}

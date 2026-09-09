@@ -1,0 +1,14 @@
+data/processed/*.parquet
+data/raw/
+.DS_Store
+*.egg-info/
+# large / local-only
+.llm/
+*.log
+outputs/models/retriever.joblib
+outputs/tmp/
+*.pyc
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/

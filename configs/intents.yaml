@@ -1,0 +1,139 @@
+# Intent taxonomy for SpotifyCares, derived from clustering ~24k English root
+# customer tweets (Oct-Dec 2017) and reading samples per cluster. `dm_rate` is the
+# share of SpotifyCares replies in that cluster that asked the customer to DM; it is
+# the empirical basis for `auto_handle` (see REPORT.md, "Escalation policy").
+brand: SpotifyCares
+intents:
+  - name: account_access
+    description: >
+      Cannot log in, locked out, password/email reset, Facebook-login problems,
+      account hacked or shows unknown activity, wants to recover or merge an account.
+    auto_handle: false
+    why: needs account verification; SpotifyCares took ~83% of these to DM
+    seed_keywords: [log in, login, logged out, locked out, password, reset, hacked, hack, sign in, signin, facebook, recover my account, someone else, unknown activity, wrong email]
+    examples:
+      - "Hi Spotify, I am locked out of my account. My account was linked to my old Facebook and I have since deleted it."
+      - "someone hacked my account and added music I don't recognize. Should I do something besides changing my password?"
+  - name: billing_payment
+    description: >
+      Charged wrongly or twice, wants a refund, cannot pay, card or PayPal declined,
+      updating payment details, charged after cancelling, trial charged early, wants to cancel Premium.
+    auto_handle: false
+    why: money and account state; SpotifyCares took ~80-85% of these to DM
+    seed_keywords: [charged, charge, refund, payment, pay, card, paypal, billed, billing, money, cancel my, cancelled, subscription, invoice, receipt, overcharged, debit]
+    examples:
+      - "I wanted to cancel my premium trial but it would not let me and I was charged today. I would like a refund please."
+      - "Help! We can't update our payment info after trying with several cards!"
+  - name: plan_and_offers
+    description: >
+      Family plan invites/joining/kicked out, student discount verification or renewal,
+      promotional offers (99p, 3 months, Hulu bundle, Starbucks, gift cards, presale codes) not applied,
+      questions about which plan to pick or what a plan includes.
+    auto_handle: false
+    why: usually account-specific eligibility; SpotifyCares took ~82% of these to DM
+    seed_keywords: [family, family plan, student, discount, offer, promo, promotion, 99p, "0.99", trial, gift card, hulu, starbucks, code, bundle, 3 months, eligible, eligibility, upgrade]
+    examples:
+      - "I received the invitation to join Family Premium but when i try to accept it doesn't work"
+      - "Hello suddenly I'm getting charged $10 rather than the student discount on spotify ???? Help"
+  - name: playback_technical
+    description: >
+      App crashes, freezes, won't open or install, songs won't play, playback stops/pauses/skips,
+      error codes, no sound, web player or desktop app broken, problems after an update,
+      slow search, queue or shuffle behaving wrongly (as a bug, not a feature request).
+    auto_handle: true
+    why: standard troubleshooting (restart, clean reinstall, check status) resolves most; DM rate ~12%
+    seed_keywords: [crash, crashes, crashing, freez, won't play, wont play, not playing, stops playing, keeps stopping, pausing, skipping, error, bug, glitch, web player, desktop, not working, doesn't work, doesnt work, broken, update, ios 11, reinstall, no sound, buffering, loading]
+    examples:
+      - "My music keeps stopping ever since I upgraded to iOS11"
+      - "Getting clicking and popping sounds on Spotify Premium Playback, reinstalled, Hardware Acceleration off"
+  - name: downloads_offline
+    description: >
+      Downloaded songs disappeared, offline mode not working, saved songs/library/playlists missing
+      or wiped, download limit or storage questions.
+    auto_handle: true
+    why: SpotifyCares answers with the "Downloads unexpectedly removed" help article; DM rate ~17%
+    seed_keywords: [download, downloaded, downloads, offline, saved songs, my songs are gone, songs disappeared, library, disappeared, deleted, gone, storage, sd card]
+    examples:
+      - "why have all my saved songs disappeared?"
+      - "my downloaded songs keep disappearing when I open the app offline"
+  - name: content_availability
+    description: >
+      A song, album, artist, podcast or version is missing, greyed out or removed, asks when
+      a release will be available, wrong metadata/lyrics, or Spotify not available in a country/region.
+    auto_handle: true
+    why: licensing/availability explanation with a standard link; DM rate ~10%
+    seed_keywords: [not available, unavailable, available in, greyed, grayed, missing, removed, where is, when will, release, album, reputation, country, region, india, south africa, licensing, podcast, wrong song, wrong artist]
+    examples:
+      - "when will reputation be out on spotify"
+      - "would you guys care to explain why DLO3 music is not available in my country?"
+  - name: feature_request_feedback
+    description: >
+      Asks for a new feature or a change, complains about a redesign or removed feature (lyrics,
+      shuffle algorithm, recommendations), general product suggestions or opinions without a
+      technical failure.
+    auto_handle: true
+    why: SpotifyCares thanks and points to the Community ideas board; DM rate ~13%
+    seed_keywords: [feature, add a, please add, bring back, suggestion, idea, would be cool, would be nice, wish, should have, why can't i, why cant i, redesign, new update sucks, algorithm, recommend, discover weekly, lyrics, dark mode, sort]
+    examples:
+      - "please please bring back lyrics"
+      - "it would be so dope if you guys could predict songs similar to the one I'm listening to"
+  - name: ads_complaint
+    description: >
+      Too many, repeated, loud or inappropriate ads on the free tier; ads despite paying.
+    auto_handle: true
+    why: acknowledge, pass feedback on, mention Premium; DM rate low (ads on Premium is billing_payment)
+    seed_keywords: [ad, ads, advert, adverts, commercial, commercials, same ad, ads in a row, loud ad]
+    examples:
+      - "can u not fucking give me 400000 ads at once?"
+      - "Hey can you NOT PLAY THE SAME AD TWICE BACK TO BACK IT'S KIND OF ANNOYING"
+  - name: device_integration
+    description: >
+      Problems using Spotify with another device or service: Sonos, Alexa/Echo, Google Home,
+      Chromecast, car (Bluetooth, CarPlay, Android Auto), PlayStation/Xbox, Apple Watch, smart TV,
+      Spotify Connect, third-party app integrations.
+    auto_handle: true
+    why: device troubleshooting steps and partner links; mixed DM rate (~30%)
+    seed_keywords: [sonos, alexa, echo, google home, chromecast, cast, car, bluetooth, carplay, android auto, ps4, playstation, xbox, apple watch, tv, roku, connect, waze, uber, fitbit, garmin, wear os, smart speaker]
+    examples:
+      - "spotify won't play on my sonos speaker since yesterday"
+      - "Car Bluetooth isn't always sending song data and controls don't work."
+  - name: praise_or_thanks
+    description: >
+      Compliments, thanks, love for a playlist or feature, celebrating that something they
+      wanted has arrived. No problem to solve and nothing requested.
+    auto_handle: true
+    why: >
+      A warm acknowledgement is the whole job; SpotifyCares answers these publicly
+      ("thanks for the feedback! It's music to our ears") and almost never moves them to DM.
+      Split out of `other` because the historical clustering showed a distinct
+      praise/customer-service-compliment cluster whose DM rate was far below the rest of `other`.
+    seed_keywords: [thank you, thanks, thankyou, love you, i love, ily, appreciate, amazing, awesome, best, brilliant, well done, good job, great service, you rock, legends, wow that was]
+    examples:
+      - "thanks for always coming through with the fire playlists & customer service ily hope y'all like my pumpkin"
+      - "HAS SUCH GOOD CUSTOMER SERVICE WOW THAT WAS SO PERSONAL I REALLY APPRECIATED THAT #thankful"
+  - name: other
+    description: >
+      Anything else: venting with no actionable issue, jokes, spam, questions for
+      artists/labels (Spotify for Artists), press/partnership/sponsorship, complaints about the
+      support process itself, unclear or too short to tell. Praise goes to praise_or_thanks.
+    auto_handle: false
+    why: nothing grounded to say; a human decides whether to reply at all
+    seed_keywords: []
+    examples:
+      - "I'd have a higher chance getting Ruvic to answer his phone then for to reply"
+      - "how did I go from a chat with one of your support people to emailing you and tweeting at you"
+
+# Reasons the agent may give for escalating (stable identifiers used in metrics)
+escalation_reasons:
+  needs_account_access: "Resolving this needs account details (billing, login, plan); SpotifyCares handles these in DM."
+  historical_dm_pattern: "SpotifyCares took most similar past cases to DM."
+  pii_in_public: "The customer posted sensitive information publicly; a human should advise deleting it and move to DM."
+  security_incident: "Possible account compromise or fraud."
+  legal_or_safety: "Legal threat, safety concern or harassment; needs a human."
+  language_routing: "Message is not in English; route to the local-language team."
+  low_confidence: "The classifier is not confident which issue this is."
+  no_precedent: "No sufficiently similar past case to ground a reply."
+  media_only: "The tweet is only a link or image; the issue cannot be read from text."
+  unclear_request: "No actionable issue could be identified; a human decides whether and how to reply."
+  payment_dispute: "The customer demands a refund or disputes a charge; money decisions stay with a human."
+  guardrail: "The drafted reply failed a safety check (invented link or promise) so it was not auto-sent."
