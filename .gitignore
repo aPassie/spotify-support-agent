@@ -5,6 +5,8 @@ data/raw/
 # large / local-only
 .llm/
 *.log
+outputs/models/embed_index.corpus.parquet
+outputs/models/embed_index.npy
 outputs/models/retriever.joblib
 outputs/tmp/
 *.pyc

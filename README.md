@@ -128,10 +128,11 @@ DECISIONS.md               15 non-obvious decisions and why
 
 ## What is committed and what is not
 
-Committed: hand labels, human ratings, all system outputs, judge outputs, metrics, the LLM cache,
-the intent classifier (2.4 MB) and the historical link allowlist. Not committed: the raw dataset,
-the derived parquet files, the model weights and the 44 MB retrieval index; `make data` and
-`make train` rebuild them deterministically.
+Committed: hand labels, human ratings, blinded A/B preferences, all system and judge outputs,
+metrics, the LLM cache, the intent classifier (2.4 MB) and the historical link allowlist. Not
+committed: the raw dataset, derived parquet files, model weights, and the retrieval indexes (44 MB
+sparse, 30 MB dense) since they contain dataset text and are regenerable; `make data`, `make train`
+and `make embed-index` rebuild them deterministically.
 
 ## Models used
 
