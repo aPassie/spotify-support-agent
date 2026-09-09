@@ -1,5 +1,8 @@
 """Build the per-brand conversation subset from the raw TWCS dump.
 
+Source data: *Customer Support on Twitter* by Stuart Axelbrooke, CC BY-NC-SA 4.0. Anything
+written out of here inherits those terms; see DATA_LICENSE.md.
+
 Unit of analysis: a *root* customer tweet (starts a thread) paired with the
 brand's first public reply to it. Follow-up turns are kept for context but the
 agent is evaluated on root messages only (see REPORT.md, "what I chose not to build").

@@ -122,6 +122,7 @@ golden/pairwise_*.csv      blinded A/B preferences (+ hidden key) for the retrie
 scripts/setup_llm.sh       fetch llama.cpp + models, start a server
 scripts/tune_thresholds.py policy threshold selection on historical data only
 outputs/metrics/tables.md  every number quoted in the report
+LICENSE / DATA_LICENSE.md  MIT for the code; CC BY-NC-SA 4.0 for the redistributed tweet text
 REPORT.md                  problem framing, results, failure analysis, caveats
 ABLATIONS.md               component ablations and the retrieval comparison in detail
 DECISIONS.md               15 non-obvious decisions and why
@@ -155,10 +156,18 @@ Two practical notes if you run this on a memory-constrained laptop. Pass `--no-m
 `make llm-stop`; the Vulkan backend's host memory also grows with request volume, reaching about
 7 GB after the ~600-call judge pass, so two servers plus a desktop session will swap.
 
+## Licensing (read this before reusing the data)
+
+Code is **MIT** (`LICENSE`). The data files are **not**: they derive from a dataset licensed
+**CC BY-NC-SA 4.0**, so they are non-commercial and share-alike. This repository redistributes
+about 6,600 tweet texts, roughly 0.24% of the source, as the brief's "a subsample is expected and
+encouraged" invites. Full provenance, the per-file inventory and what the restrictions mean:
+`DATA_LICENSE.md`.
+
 ## Credits
 
-- Dataset: *Customer Support on Twitter* by Stuart Axelbrooke (Kaggle `thoughtvector/customer-support-on-twitter`),
-  read from the Hugging Face mirror `SunidhiSriram/twcs`.
+- Dataset: *Customer Support on Twitter* by Stuart Axelbrooke (Kaggle `thoughtvector/customer-support-on-twitter`,
+  CC BY-NC-SA 4.0), read from the Hugging Face mirror `SunidhiSriram/twcs`.
 - Inference: [llama.cpp](https://github.com/ggml-org/llama.cpp). Models: Qwen3-4B-Instruct-2507
   (Alibaba, GGUF by Unsloth), gemma-3-4b-it (Google, GGUF by Unsloth).
 - Libraries: scikit-learn (TF-IDF, logistic regression, metrics), lingua (language id),
