@@ -4,7 +4,13 @@ brand: SpotifyCares
 eval_start: "2017-11-20"
 retrieval:
   k: 5
-  min_similarity: 0.25        # below this -> escalate with reason no_precedent
+  min_similarity: 0.25        # below this -> escalate with reason no_precedent (TF-IDF scale)
+  # Cosine similarity from a sentence encoder lives on a completely different scale (mean 0.86
+  # vs 0.40 for TF-IDF here), so the embedding ablation needs its own threshold or the
+  # comparison is rigged: with 0.25 the no_precedent guard never fires and the variant
+  # "gains" coverage purely by dropping a safety check. This value is percentile-matched to
+  # the TF-IDF one, i.e. it excludes the same bottom 4.5% of top-1 similarities.
+  min_similarity_embed: 0.763
 policy:
   # The decision that matters is auto vs escalate, so the gate is on the probability mass the
   # classifier puts on escalate-only intents, not on top-1 confidence: being unsure between two

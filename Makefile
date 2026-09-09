@@ -2,7 +2,8 @@
 PY := .venv/bin/python
 LLM := .llm
 
-.PHONY: setup data golden-candidates silver train run judge eval reproduce full quick llm-gen llm-judge llm-stop test clean
+.PHONY: setup data golden-candidates silver train run judge eval reproduce full quick \
+        ablate embed-index pairwise llm-gen llm-judge llm-embed llm-stop test clean
 
 setup:            ## create venv (Python 3.12 via uv) and install the package
 	uv venv --python 3.12 .venv
@@ -30,6 +31,22 @@ run:              ## run agent + baselines on the golden set (needs generator se
 judge:            ## judge all replies with the judge model (needs judge server unless cached)
 	$(PY) -m supportagent.judge_run
 
+embed-index:      ## embed the historical corpus for the dense-retrieval ablation (needs :8082)
+	$(PY) scripts/build_embed_index.py
+
+ablate:           ## run the four ablation variants (needs generator; embed variant needs :8082)
+	$(PY) -m supportagent.ablate
+
+pairwise:         ## build a blinded A/B sheet for two systems, then score it once filled in
+	$(PY) -m supportagent.pairwise make-sheet --a agent --b embed --n 30
+	@echo "fill the 'better' column with A/B/T, then: make pairwise-score"
+
+pairwise-score:
+	$(PY) -m supportagent.pairwise score
+
+thresholds:       ## re-derive the policy thresholds on historical data
+	$(PY) scripts/tune_thresholds.py
+
 eval: reproduce
 
 quick:            ## end-to-end smoke run on 20 golden items with live LLMs (~5 min CPU)
@@ -42,6 +59,9 @@ llm-gen:          ## download llama.cpp + generator model and start it on :8080
 
 llm-judge:        ## download judge model and start it on :8081
 	bash scripts/setup_llm.sh judge
+
+llm-embed:        ## download the embedding model and start it on :8082
+	bash scripts/setup_llm.sh embed
 
 llm-stop:
 	-pkill -x llama-server

@@ -22,6 +22,51 @@ METRICS = Path("outputs/metrics")
 SYSTEMS = {"agent": "agent.jsonl", "trivial": "baseline_trivial.jsonl", "simple": "baseline_simple.jsonl"}
 
 
+def all_systems() -> dict[str, str]:
+    """Baselines and agent, plus any ablation_*.jsonl that has been produced."""
+    out = dict(SYSTEMS)
+    for f in sorted(PRED.glob("ablation_*.jsonl")):
+        out[f.stem.replace("ablation_", "abl:")] = f.name
+    return out
+
+
+def bootstrap_ci(values, stat=np.mean, n_boot: int = 2000, seed: int = 0, alpha: float = 0.05):
+    """Percentile bootstrap CI over per-item values. Returns (lo, hi)."""
+    v = np.asarray(values, dtype=float)
+    if len(v) == 0:
+        return (float("nan"), float("nan"))
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, len(v), size=(n_boot, len(v)))
+    boots = stat(v[idx], axis=1)
+    return (float(np.quantile(boots, alpha / 2)), float(np.quantile(boots, 1 - alpha / 2)))
+
+
+def wilson_ci(k: int, n: int, z: float = 1.96):
+    if n == 0:
+        return (float("nan"), float("nan"))
+    p = k / n
+    c = (p + z * z / (2 * n)) / (1 + z * z / n)
+    h = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
+    return (float(c - h), float(c + h))
+
+
+def mcnemar(a_wrong, b_wrong):
+    """Exact McNemar test on paired binary outcomes (same items, two systems).
+
+    a_wrong/b_wrong are boolean arrays of 'this system got this item wrong'. Returns the
+    discordant counts and a two-sided exact binomial p-value.
+    """
+    from scipy.stats import binomtest
+
+    a_wrong = np.asarray(a_wrong, dtype=bool)
+    b_wrong = np.asarray(b_wrong, dtype=bool)
+    n01 = int((~a_wrong & b_wrong).sum())  # only b wrong
+    n10 = int((a_wrong & ~b_wrong).sum())  # only a wrong
+    n = n01 + n10
+    p = float(binomtest(n10, n, 0.5).pvalue) if n else 1.0
+    return {"only_b_wrong": n01, "only_a_wrong": n10, "discordant": n, "p_value": p}
+
+
 def _by_id(rows):
     return {r["id"]: r for r in rows}
 
@@ -30,8 +75,10 @@ def intent_metrics(gold, pred, names):
     y = [g["intent"] for g in gold]
     p = [pred[g["id"]]["intent"] for g in gold]
     per_class = precision_recall_fscore_support(y, p, labels=names, zero_division=0)
+    correct = [int(a == b) for a, b in zip(y, p)]
     return {
         "accuracy": accuracy_score(y, p),
+        "accuracy_ci": bootstrap_ci(correct),
         "macro_f1": f1_score(y, p, average="macro", labels=names, zero_division=0),
         "per_class_f1": dict(zip(names, per_class[2].tolist())),
         "support": dict(zip(names, per_class[3].tolist())),
@@ -44,13 +91,20 @@ def escalation_metrics(gold, pred):
     tp = int((y & p).sum()); fp = int((~y & p).sum()); fn = int((y & ~p).sum()); tn = int((~y & ~p).sum())
     return {
         "coverage_auto_rate": float((~p).mean()),
+        "coverage_auto_rate_ci": bootstrap_ci((~p).astype(float)),
         "escalate_precision": tp / (tp + fp) if tp + fp else 0.0,
         "escalate_recall": tp / (tp + fn) if tp + fn else 0.0,
         "unsafe_auto_rate": fn / (tp + fn) if tp + fn else 0.0,  # should escalate but auto-handled
         "auto_precision": tn / (tn + fn) if tn + fn else 0.0,      # auto-handled and that was right
+        "auto_precision_ci": wilson_ci(tn, tn + fn),
+        "n_auto": tn + fn,
         "n_unsafe_auto": fn,
         "n_over_escalated": fp,
         "confusion": {"tp": tp, "fp": fp, "fn": fn, "tn": tn},
+        # per-item outcome for paired significance tests: did this system send a public reply
+        # to an item that needed a human?
+        "unsafe_per_item": (y & ~p).astype(int).tolist(),
+        "wrong_decision_per_item": ((y & ~p) | (~y & p)).astype(int).tolist(),
     }
 
 
@@ -85,7 +139,7 @@ def judge_metrics(gold, pred, jrows):
     if not ids:
         return None
     ov = np.array([j[i]["overall"] for i in ids])
-    out = {"n": len(ids), "mean_overall": float(ov.mean()), "pct_ge4": float((ov >= 4).mean()), "pct_le2": float((ov <= 2).mean())}
+    out = {"n": len(ids), "mean_overall": float(ov.mean()), "mean_overall_ci": bootstrap_ci(ov), "pct_ge4": float((ov >= 4).mean()), "pct_le2": float((ov <= 2).mean())}
     for c in CHECKS:
         out[f"pass_{c}"] = float(np.mean([bool(j[i].get(c)) for i in ids]))
     gd = _by_id(gold)
@@ -109,8 +163,9 @@ def main() -> None:
     tax = load_taxonomy()
     names = tax.names
     gold_all = read_jsonl(Path(args.golden))
-    preds = {s: _by_id(read_jsonl(PRED / f)) for s, f in SYSTEMS.items() if (PRED / f).exists()}
-    judges = {s: read_jsonl(JUDGE / f"{s}.jsonl") for s in SYSTEMS if (JUDGE / f"{s}.jsonl").exists()}
+    systems = all_systems()
+    preds = {s: _by_id(read_jsonl(PRED / f)) for s, f in systems.items() if (PRED / f).exists()}
+    judges = {s: read_jsonl(JUDGE / f"{s.replace(':', '_')}.jsonl") for s in systems if (JUDGE / f"{s.replace(':', '_')}.jsonl").exists()}
     # Link allowlist: prefer the small exported file so this step needs no large data files.
     hist_urls: set[str] = set()
     url_file = Path("outputs/models/hist_urls.json")
@@ -135,6 +190,22 @@ def main() -> None:
                 "reply_auto": reply_auto_metrics(gold, pred, hist_urls) if hist_urls else None,
                 "judge": judge_metrics(gold, pred, judges[s]) if s in judges else None,
             }
+    # paired significance tests on the random stratum: is the agent's advantage real?
+    if "agent" in preds:
+        gold_r = [g for g in strata["random"] if g["id"] in preds["agent"]]
+        M["significance_random"] = {}
+        base = M["systems"]["agent"]["random"]["escalation"]
+        for other in [s for s in preds if s != "agent"]:
+            o = M["systems"][other]["random"]["escalation"]
+            M["significance_random"][f"agent_vs_{other}"] = {
+                "unsafe_auto_mcnemar": mcnemar(base["unsafe_per_item"], o["unsafe_per_item"]),
+                "wrong_decision_mcnemar": mcnemar(base["wrong_decision_per_item"], o["wrong_decision_per_item"]),
+                "intent_mcnemar": mcnemar(
+                    [int(preds["agent"][g["id"]]["intent"] != g["intent"]) for g in gold_r],
+                    [int(preds[other][g["id"]]["intent"] != g["intent"]) for g in gold_r],
+                ),
+            }
+
     # agent confusion matrix + escalation reasons
     if "agent" in preds:
         gold = gold_all
@@ -183,23 +254,48 @@ def main() -> None:
     # ---- markdown tables
     L = [f"# Metrics (golden n={M['n_golden']}, random stratum n={M['n_random']})\n"]
     for st in ("random", "all"):
-        L.append(f"\n## Intent classification ({st})\n\n| system | accuracy | macro-F1 |\n|---|---|---|")
+        L.append(f"\n## Intent classification ({st})\n\n| system | accuracy [95% CI] | macro-F1 |\n|---|---|---|")
         for s in preds:
-            m = M["systems"][s][st]["intent"]; L.append(f"| {s} | {m['accuracy']:.3f} | {m['macro_f1']:.3f} |")
-    L.append("\n## Escalation decision (random stratum)\n\n| system | auto-handle rate | auto precision | unsafe auto rate | escalate precision | escalate recall |\n|---|---|---|---|---|---|")
+            m = M["systems"][s][st]["intent"]
+            ci = m["accuracy_ci"]
+            L.append(f"| {s} | {m['accuracy']:.3f} [{ci[0]:.3f}, {ci[1]:.3f}] | {m['macro_f1']:.3f} |")
+    L.append(
+        "\n## Escalation decision, random stratum with 95% CIs\n\n"
+        "`auto-handle rate` = share of tweets answered without a human. `auto precision` = of those, "
+        "the share that should indeed have been answered publicly. `unsafe replies` = public replies sent "
+        "on tweets that needed a human (the error that matters).\n\n"
+        "| system | auto-handle rate [CI] | auto precision [CI] | unsafe replies | escalate recall |\n|---|---|---|---|---|"
+    )
     for s in preds:
         e = M["systems"][s]["random"]["escalation"]
-        L.append(f"| {s} | {e['coverage_auto_rate']:.3f} | {e['auto_precision']:.3f} | {e['unsafe_auto_rate']:.3f} ({e['n_unsafe_auto']}) | {e['escalate_precision']:.3f} | {e['escalate_recall']:.3f} |")
+        cc, pc = e["coverage_auto_rate_ci"], e["auto_precision_ci"]
+        ap = f"{e['auto_precision']:.3f} [{pc[0]:.3f}, {pc[1]:.3f}]" if e["n_auto"] else "n/a"
+        L.append(
+            f"| {s} | {e['coverage_auto_rate']:.3f} [{cc[0]:.3f}, {cc[1]:.3f}] | {ap} | "
+            f"{e['n_unsafe_auto']} of {e['n_auto']} | {e['escalate_recall']:.3f} |"
+        )
+    if "significance_random" in M:
+        L.append(
+            "\n### Paired significance vs the agent (McNemar exact, random stratum)\n\n"
+            "Same 160 items for every system, so the comparison is paired. `discordant` counts items where "
+            "exactly one of the two systems erred.\n\n"
+            "| comparison | agent-only errors | other-only errors | discordant | p |\n|---|---|---|---|---|"
+        )
+        for k, v in M["significance_random"].items():
+            for metric, label in (("unsafe_auto_mcnemar", "unsafe replies"), ("intent_mcnemar", "intent errors")):
+                t = v[metric]
+                L.append(f"| {k.replace('agent_vs_', 'vs ')} ({label}) | {t['only_a_wrong']} | {t['only_b_wrong']} | {t['discordant']} | {t['p_value']:.2g} |")
     L.append("\n## Escalation decision (all 200)\n\n| system | auto-handle rate | auto precision | unsafe auto rate | escalate precision | escalate recall |\n|---|---|---|---|---|---|")
     for s in preds:
         e = M["systems"][s]["all"]["escalation"]
         L.append(f"| {s} | {e['coverage_auto_rate']:.3f} | {e['auto_precision']:.3f} | {e['unsafe_auto_rate']:.3f} ({e['n_unsafe_auto']}) | {e['escalate_precision']:.3f} | {e['escalate_recall']:.3f} |")
     if any(M["systems"][s]["all"]["judge"] for s in preds):
-        L.append("\n## Reply quality, LLM judge (all 200)\n\n| system | mean overall | % >=4 | % <=2 | addresses | brand-consistent | actionable | safe | tone |\n|---|---|---|---|---|---|---|---|---|")
+        L.append("\n## Reply quality, LLM judge (all 200)\n\n| system | mean overall [95% CI] | % >=4 | % <=2 | addresses | brand-consistent | actionable | safe | tone |\n|---|---|---|---|---|---|---|---|---|")
         for s in preds:
             j = M["systems"][s]["all"]["judge"]
             if j:
-                L.append(f"| {s} | {j['mean_overall']:.2f} | {j['pct_ge4']:.2f} | {j['pct_le2']:.2f} | " + " | ".join(f"{j['pass_'+c]:.2f}" for c in CHECKS) + " |")
+                ci = j["mean_overall_ci"]
+                L.append(f"| {s} | {j['mean_overall']:.2f} [{ci[0]:.2f}, {ci[1]:.2f}] | {j['pct_ge4']:.2f} | {j['pct_le2']:.2f} | " + " | ".join(f"{j['pass_'+c]:.2f}" for c in CHECKS) + " |")
         L.append("\n### Judge score by hand label (all 200)\n\n| system | label=auto-ok mean (n) | label=escalate mean (n) | system auto mean (n) | system escalate mean (n) |\n|---|---|---|---|---|")
         for s in preds:
             j = M["systems"][s]["all"]["judge"]

@@ -44,6 +44,20 @@ ones in the report.
 make test        # 10 unit tests: text normalisation, escalation policy, guardrails
 ```
 
+## Ablations: which components earn their place
+
+| variant | auto-handle rate | auto precision | unsafe replies (of 160) | judge mean |
+|---|---|---|---|---|
+| **full agent** | 0.419 | 0.970 | **2** | 3.52 |
+| no escalation policy | 1.000 | 0.631 | **59** | **3.67** |
+| keyword classifier | 0.263 | 0.929 | 3 | 3.38 |
+| no retrieved exemplars | 0.419 | 0.970 | 2 | 3.24 |
+| dense (embedding) retrieval | 0.438 | 0.971 | 2 | 3.46 |
+
+Note the second row: deleting the safety policy sends 59 unsafe public replies instead of 2 **and
+gives the best LLM-judge score of any variant**. Optimising the judge metric would make the system
+much worse. Details in `ABLATIONS.md`; reproduce with `make ablate` then `make eval`.
+
 ## Regenerate everything from raw data (~35 min on a laptop GPU)
 
 Needs the 517 MB dataset and a local LLM server. Two 4B models run on an 8 GB GPU one at a time.
@@ -55,8 +69,19 @@ make silver      # 3,000 LLM intent labels on historical tweets (~6 min on RTX 4
 make train       # fit retriever + intent classifier (~1 min)
 make run         # agent + both baselines over the 200 golden tweets (~1.5 min)
 make llm-stop && make llm-judge   # swap in gemma-3-4b-it on :8081 (different model family)
-make judge       # LLM-as-judge over all three systems (~10 min)
+make judge       # LLM-as-judge over every system (~10 min)
 make eval
+```
+
+Optional, for the ablations:
+
+```bash
+make llm-stop && make llm-embed   # bge-small-en-v1.5 on :8082 (67 MB)
+make embed-index                  # embed 19.5k historical tweets (~25 s on GPU)
+make llm-gen                      # generator back up, alongside the embedding server
+make ablate                       # four variants over the golden set
+make thresholds                   # re-derive the policy thresholds on historical data
+make pairwise                     # blinded A/B sheet for two systems; fill it in, then pairwise-score
 ```
 
 Any OpenAI-compatible endpoint works instead of the local server:
@@ -86,14 +111,18 @@ src/supportagent/
   baselines.py             trivial and simple baselines
   run.py                   run all three systems over the golden set
   judge.py / judge_run.py  LLM-as-judge rubric + judge/human agreement
-  evaluate.py              all metrics, tables, figure, failure dump
+  ablate.py                component ablations (no policy / no exemplars / rules / dense retrieval)
+  pairwise.py              blinded A/B preference harness with power analysis
+  evaluate.py              all metrics + CIs + McNemar tests, tables, figure, failure dump
 golden/golden.jsonl        200 hand-labelled tweets (intent, escalate, reason, notes)
 golden/LABELING.md         sampling and labelling protocol, tie-break rules
 golden/human_ratings.csv   60 human reply ratings used to validate the judge
+golden/pairwise_*.csv      blinded A/B preferences (+ hidden key) for the retrieval comparison
 scripts/setup_llm.sh       fetch llama.cpp + models, start a server
 scripts/tune_thresholds.py policy threshold selection on historical data only
 outputs/metrics/tables.md  every number quoted in the report
 REPORT.md                  problem framing, results, failure analysis, caveats
+ABLATIONS.md               component ablations and the retrieval comparison in detail
 DECISIONS.md               15 non-obvious decisions and why
 ```
 
@@ -110,8 +139,13 @@ the derived parquet files, the model weights and the 44 MB retrieval index; `mak
 |---|---|---|
 | reply drafting, silver labels | Qwen3-4B-Instruct-2507 Q4_K_M | strong instruction following at 4B; runs in 3.6 GB VRAM |
 | LLM judge | gemma-3-4b-it Q4_K_M | different model family from the generator, to limit self-preference |
+| dense retrieval ablation | bge-small-en-v1.5 f16 | 67 MB, embeds the 19.5k corpus in 25 s |
 
-Both served by llama.cpp (Vulkan) on an RTX 4060 Laptop, 8 GB. No paid API was used.
+All served by llama.cpp on an RTX 4060 Laptop (8 GB) using the prebuilt **Vulkan** binaries, which
+work on NVIDIA and AMD with only the normal driver. llama.cpp publishes no prebuilt CUDA build for
+Linux (Windows only), so CUDA would mean compiling from source; Vulkan was about 7x the CPU build
+here, which was enough. `scripts/setup_llm.sh` prefers a GPU build when present and falls back to
+CPU. No paid API was used.
 
 Two practical notes if you run this on a memory-constrained laptop. Pass `--no-mmap` (as
 `scripts/setup_llm.sh` does): with all layers offloaded, it cut the server's *host* memory from

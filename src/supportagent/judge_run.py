@@ -18,6 +18,14 @@ from .retrieval import Retriever
 
 SYSTEMS = {"agent": "agent.jsonl", "trivial": "baseline_trivial.jsonl", "simple": "baseline_simple.jsonl"}
 JUDGE = Path("outputs/judge")
+PRED = Path("outputs/predictions")
+
+
+def all_systems() -> dict[str, str]:
+    out = dict(SYSTEMS)
+    for f in sorted(PRED.glob("ablation_*.jsonl")):
+        out[f.stem.replace("ablation_", "abl_")] = f.name
+    return out
 
 
 def main() -> None:
@@ -37,8 +45,8 @@ def main() -> None:
         offline=args.offline,
     )
     similar_cache: dict[str, list[dict]] = {}
-    for s, f in SYSTEMS.items():
-        p = Path("outputs/predictions") / f
+    for s, f in all_systems().items():
+        p = PRED / f
         if not p.exists():
             continue
         preds = read_jsonl(p)
@@ -63,7 +71,7 @@ def main() -> None:
         ids = sorted(gold)
         chosen = rng.sample(ids, args.n_human)
         rows = []
-        for s, f in SYSTEMS.items():
+        for s, f in SYSTEMS.items():  # human sheet covers the three headline systems only
             preds = {r["id"]: r for r in read_jsonl(Path("outputs/predictions") / f)}
             for i in chosen:
                 rows.append({"id": i, "system": s, "cust_text": gold[i]["text_display"], "reply": preds[i]["reply"], "human_overall": ""})

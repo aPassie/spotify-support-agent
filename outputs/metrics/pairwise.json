@@ -1,0 +1,21 @@
+{
+ "system_a": "agent",
+ "system_b": "embed",
+ "n_rated": 30,
+ "n_decided": 21,
+ "ties": 9,
+ "wins_agent": 8,
+ "wins_embed": 13,
+ "win_rate_b_of_decided": 0.6190476190476191,
+ "ci95": [
+  0.38435439037864594,
+  0.8189283744598268
+ ],
+ "p_value": 0.38331031799316406,
+ "power": {
+  "observed_win_rate": 0.6190476190476191,
+  "n_decided_for_80pct_power": 137,
+  "tie_rate": 0.3,
+  "eligible_items": 78
+ }
+}

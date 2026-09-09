@@ -82,6 +82,25 @@ class RulesClassifier:
     def predict(self, texts) -> list[tuple[str, float]]:
         return [self.predict_one(t) for t in texts]
 
+    def predict_proba(self, texts):
+        """Keyword-hit shares as a pseudo-distribution, so the same policy can consume it.
+
+        Used only by the `rules_clf` ablation: it lets us swap the classifier while holding the
+        escalation policy fixed, which is the point of that ablation.
+        """
+        import numpy as np
+
+        classes = self.tax.names
+        P = np.zeros((len(texts), len(classes)), dtype=float)
+        for r, t in enumerate(texts):
+            low = clean_for_matching(t).lower()
+            hits = np.array([sum(1 for p in self.patterns[c] if p.search(low)) for c in classes], dtype=float)
+            if hits.sum() == 0:
+                P[r, classes.index("other")] = 1.0
+            else:
+                P[r] = hits / hits.sum()
+        return P, classes
+
 
 # --------------------------------------------------------------------------- LLM labelling
 def taxonomy_prompt(tax: Taxonomy) -> str:

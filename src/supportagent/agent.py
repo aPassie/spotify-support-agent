@@ -102,9 +102,10 @@ def format_exemplars(exemplars: list[Neighbor]) -> str:
 
 
 class Agent:
-    def __init__(self, tax: Taxonomy, cfg: dict, retriever: Retriever, classifier: TfidfClassifier, client: LLMClient | None, k: int = 8, n_exemplars: int = 4):
+    def __init__(self, tax: Taxonomy, cfg: dict, retriever, classifier, client: LLMClient | None, k: int = 8, n_exemplars: int = 4, force_auto: bool = False):
         self.tax, self.cfg, self.retriever, self.classifier, self.client = tax, cfg, retriever, classifier, client
         self.k, self.n_exemplars = k, n_exemplars
+        self.force_auto = force_auto  # `no_policy` ablation: auto-handle everything
 
     def _pick_exemplars(self, neighbors: list[Neighbor], prefer_public: bool) -> list[Neighbor]:
         if prefer_public:
@@ -118,9 +119,13 @@ class Agent:
     def draft(self, text: str, intent: str, exemplars: list[Neighbor]) -> str:
         if self.client is None:
             return ""
+        if exemplars:
+            body = f"Similar past cases and how SpotifyCares replied:\n{format_exemplars(exemplars)}\n\n"
+        else:
+            body = ""  # `no_exemplars` ablation: style instructions only, no grounding
         user = (
             f"Customer's issue category: {intent}\n\n"
-            f"Similar past cases and how SpotifyCares replied:\n{format_exemplars(exemplars)}\n\n"
+            f"{body}"
             f"New customer tweet: {display_text(text)}\n\nReply:"
         )
         return self.client.chat(
@@ -150,7 +155,9 @@ class Agent:
         raw_draft = self.draft(text, intent, exemplars) if not (is_media_only or lang not in ("en", "und")) else ""
         draft, flags = apply_guardrails(raw_draft, allowed_urls, self.cfg["policy"]["max_reply_chars"]) if raw_draft else ("", ["no_draft"])
         action, reasons = decision.action, list(decision.reasons)
-        if action == "auto" and ({"promise", "sensitive_ask", "empty", "no_draft"} & set(flags)):
+        if self.force_auto:
+            action, reasons = "auto", []
+        if action == "auto" and not self.force_auto and ({"promise", "sensitive_ask", "empty", "no_draft"} & set(flags)):
             action, reasons = "escalate", ["guardrail"] + reasons
         if action == "auto":
             reply = draft
