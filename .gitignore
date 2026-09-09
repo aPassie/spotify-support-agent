@@ -1,16 +1,131 @@
-data/processed/*.parquet
+# ---------------------------------------------------------------------------
+# This project deliberately commits a few model *outputs* (predictions, judge
+# scores, metrics, the LLM cache) because `make reproduce` recomputes every
+# published number from them in seconds. Everything else that is large,
+# regenerable, machine-local or secret stays out.
+#
+# The rules below are written as "ignore the directory, then allow the few
+# files we mean to keep", so anything new that lands in these directories is
+# excluded by default rather than accidentally committed.
+# ---------------------------------------------------------------------------
+
+# --- secrets and credentials (never commit, no exceptions) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.token
+id_rsa*
+id_ed25519*
+.netrc
+credentials*.json
+service-account*.json
+kaggle.json
+.kaggle/
+secrets.*
+*secret*.yaml
+*secret*.yml
+
+# --- raw and derived data (517 MB dataset + parquet caches; `make data` rebuilds) ---
 data/raw/
-.DS_Store
-*.egg-info/
-# large / local-only
+data/interim/
+data/processed/*
+!data/processed/silver_labels.jsonl
+
+# --- model weights and inference binaries (`scripts/setup_llm.sh` fetches these) ---
+# NB: anchored with a leading slash. A bare `models/` would also exclude the *directory*
+# outputs/models/, and git cannot re-include a file whose parent directory is excluded, so
+# the negations further down would silently stop working.
 .llm/
-*.log
-outputs/models/embed_index.corpus.parquet
-outputs/models/embed_index.npy
-outputs/models/retriever.joblib
+/models/
+*.gguf
+*.safetensors
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.h5
+
+# --- retrieval indexes and other build artefacts (`make train`, `make embed-index`) ---
+# Ignore everything in outputs/models except the two small committed artefacts.
+outputs/models/*
+!outputs/models/intent_clf.joblib
+!outputs/models/hist_urls.json
+
+# --- LLM response cache: keep the sqlite db, drop its journals ---
+outputs/cache/*
+!outputs/cache/llm_cache.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db-journal
+
+# --- scratch space ---
 outputs/tmp/
-*.pyc
+tmp/
+scratch/
+*.log
+nohup.out
+
+# --- python ---
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+sdist/
+wheels/
+*.egg-info/
+*.egg
+.installed.cfg
+MANIFEST
+
+# --- virtualenvs ---
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# --- test / lint / type caches ---
 .pytest_cache/
 .ruff_cache/
-.venv/
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# --- notebooks ---
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# --- editors and tooling ---
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
+.claude/settings.local.json
+
+# --- OS cruft ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
